@@ -1,0 +1,26 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "ts-node-dev src/server.ts"
+  },
+  "dependencies": {
+    "express": "^5.x",
+    "mongoose": "^8.x",
+    "cors": "^2.x",
+    "dotenv": "^17.x",
+    "multer": "^2.x",
+    "pdf-lib": "^1.x",
+    "bcrypt": "^6.x",
+    "jsonwebtoken": "^9.x"
+  },
+  "devDependencies": {
+    "typescript": "^5.x",
+    "ts-node-dev": "^2.x",
+    "@types/node": "^24.x",
+    "@types/express": "^5.x",
+    "@types/bcrypt": "^6.x",
+    "@types/jsonwebtoken": "^9.x",
+    "@types/multer": "^2.x"
+  }
+}
