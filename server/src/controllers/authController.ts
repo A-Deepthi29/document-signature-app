@@ -96,12 +96,12 @@ export const loginUser = async (
    token
   });
 
- } catch (error) {
+ } catch (error: any) {
+  console.error("LOGIN ERROR:", error);
 
   res.status(500).json({
-   message: "Server Error"
+    message: error.message,
   });
-
- }
+}
 
 };

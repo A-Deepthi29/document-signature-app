@@ -12,16 +12,18 @@ const documentSchema = new mongoose.Schema(
       required: true,
     },
 
-    uploadedAt: {
-      type: Date,
-      default: Date.now,
+    uploadedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
+  },
+  {
+    timestamps: true,
   }
 );
 
-const Document = mongoose.model(
+export default mongoose.model(
   "Document",
   documentSchema
 );
-
-export default Document;
