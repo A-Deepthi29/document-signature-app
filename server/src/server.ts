@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import path from "path";
 
+import signatureRoutes from "./routes/signatureRoutes";
 import authRoutes from "./routes/authRoutes";
 import testRoute from "./routes/testRoute";
 import documentRoutes from "./routes/documentRoutes";
@@ -24,6 +25,10 @@ app.use(
 app.use("/api/auth", authRoutes);
 app.use("/api/test", testRoute);
 app.use("/api/docs", documentRoutes);
+app.use(
+  "/api/signatures",
+  signatureRoutes
+);
 
 mongoose
   .connect(process.env.MONGO_URI as string)
