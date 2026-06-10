@@ -3,6 +3,7 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { Rnd } from "react-rnd";
 
 pdfjs.GlobalWorkerOptions.workerSrc =
   `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -47,6 +48,33 @@ function Dashboard() {
     }
   };
 
+  const [position, setPosition] = useState({
+  x: 120,
+  y: 300,
+});
+
+const saveSignature = async (
+  fileId: string,
+  x: number,
+  y: number
+) => {
+  try {
+    await axios.post(
+      "http://localhost:5000/api/signatures",
+      {
+        fileId,
+        signer: "Deepthi",
+        x,
+        y,
+      }
+    );
+
+    alert("Signature Saved");
+  } catch (error) {
+    console.log(error);
+  }
+};
+
   return (
     <div>
       <h1>Dashboard</h1>
@@ -88,23 +116,54 @@ function Dashboard() {
                 />
               </Document>
 
-              {signature && (
-                <div
-                  style={{
-                    position: "absolute",
-                    left: signature.x,
-                    top: signature.y,
-                    background: "#374151",
-                    color: "white",
-                    padding: "5px",
-                    border: "1px solid black",
-                    fontWeight: "bold",
-                  }}
-                >
-                  ✍️ Sign Here
-                </div>
-              )}
+              <Rnd
+  default={{
+    x: position.x,
+    y: position.y,
+    width: 120,
+    height: 40,
+  }}
+  onDragStop={(e, d) => {
+    setPosition({
+      x: d.x,
+      y: d.y,
+    });
+
+    console.log(
+      "X:",
+      d.x,
+      "Y:",
+      d.y
+    );
+  }}
+  enableResizing={false}
+>
+  <div
+    style={{
+      background: "#2196F3",
+      color: "white",
+      padding: "8px",
+      borderRadius: "5px",
+      fontWeight: "bold",
+      cursor: "move",
+      textAlign: "center",
+    }}
+  >
+    ✍️ Sign Here
+  </div>
+</Rnd>
             </div>
+            <button
+  onClick={() =>
+    saveSignature(
+      doc._id,
+      position.x,
+      position.y
+    )
+  }
+>
+  Save Position
+</button>
           </div>
         );
       })}
