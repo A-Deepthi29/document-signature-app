@@ -3,7 +3,6 @@ import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { Rnd } from "react-rnd";
 
 pdfjs.GlobalWorkerOptions.workerSrc =
   `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
@@ -11,6 +10,10 @@ pdfjs.GlobalWorkerOptions.workerSrc =
 function Dashboard() {
   const [documents, setDocuments] = useState<any[]>([]);
   const [signatures, setSignatures] = useState<any[]>([]);
+  const [position, setPosition] = useState({
+    x: 120,
+    y: 300,
+  });
 
   useEffect(() => {
     fetchDocuments();
@@ -32,7 +35,7 @@ function Dashboard() {
 
       setDocuments(response.data);
     } catch (error) {
-      console.log(error);
+      console.log("Documents Error:", error);
     }
   };
 
@@ -44,47 +47,48 @@ function Dashboard() {
 
       setSignatures(response.data);
     } catch (error) {
-      console.log(error);
+      console.log("Signatures Error:", error);
     }
   };
 
-  const [position, setPosition] = useState({
-  x: 120,
-  y: 300,
-});
+  const saveSignature = async (
+    fileId: string,
+    x: number,
+    y: number
+  ) => {
+    try {
+      await axios.post(
+        "http://localhost:5000/api/signatures",
+        {
+          fileId,
+          signer: "Deepthi",
+          x,
+          y,
+          status: "pending",
+        }
+      );
 
-const saveSignature = async (
-  fileId: string,
-  x: number,
-  y: number
-) => {
-  try {
-    await axios.post(
-      "http://localhost:5000/api/signatures",
-      {
-        fileId,
-        signer: "Deepthi",
-        x,
-        y,
-      }
-    );
+      alert("Signature Saved Successfully");
 
-    alert("Signature Saved");
-  } catch (error) {
-    console.log(error);
-  }
-};
+      fetchSignatures();
+    } catch (error) {
+      console.log(error);
+      alert("Failed to save signature");
+    }
+  };
 
   return (
     <div>
       <h1>Dashboard</h1>
 
       {documents.map((doc) => {
-        if (!doc.filePath) return null;
+        if (!doc.filePath) {
+  return null;
+}
 
-        const pdfUrl =
-          "http://localhost:5000/" +
-          doc.filePath.replace(/\\/g, "/");
+const pdfUrl =
+  "http://localhost:5000/" +
+  doc.filePath.replace(/\\/g, "/");
 
         const signature = signatures.find(
           (sig) => sig.fileId === doc._id
@@ -113,57 +117,41 @@ const saveSignature = async (
                 <Page
                   pageNumber={1}
                   width={300}
+                  renderTextLayer={false}
+                  renderAnnotationLayer={false}
                 />
               </Document>
 
-              <Rnd
-  default={{
-    x: position.x,
-    y: position.y,
-    width: 120,
-    height: 40,
-  }}
-  onDragStop={(e, d) => {
-    setPosition({
-      x: d.x,
-      y: d.y,
-    });
-
-    console.log(
-      "X:",
-      d.x,
-      "Y:",
-      d.y
-    );
-  }}
-  enableResizing={false}
->
-  <div
-    style={{
-      background: "#2196F3",
-      color: "white",
-      padding: "8px",
-      borderRadius: "5px",
-      fontWeight: "bold",
-      cursor: "move",
-      textAlign: "center",
-    }}
-  >
-    ✍️ Sign Here
-  </div>
-</Rnd>
+              {/* Signature Placeholder */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: signature?.x || position.x,
+                  top: signature?.y || position.y,
+                  background: "#2196F3",
+                  color: "white",
+                  padding: "10px",
+                  borderRadius: "5px",
+                  fontWeight: "bold",
+                }}
+              >
+                ✍️ Sign Here
+              </div>
             </div>
+
+            <br />
+
             <button
-  onClick={() =>
-    saveSignature(
-      doc._id,
-      position.x,
-      position.y
-    )
-  }
->
-  Save Position
-</button>
+              onClick={() =>
+                saveSignature(
+                  doc._id,
+                  position.x,
+                  position.y
+                )
+              }
+            >
+              Save Position
+            </button>
           </div>
         );
       })}
