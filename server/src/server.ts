@@ -8,6 +8,7 @@ import signatureRoutes from "./routes/signatureRoutes";
 import authRoutes from "./routes/authRoutes";
 import testRoute from "./routes/testRoute";
 import documentRoutes from "./routes/documentRoutes";
+import pdfRoutes from "./routes/pdfRoutes";
 
 dotenv.config();
 
@@ -28,6 +29,10 @@ app.use("/api/docs", documentRoutes);
 app.use(
   "/api/signatures",
   signatureRoutes
+);
+app.use(
+  "/api/pdf",
+  pdfRoutes
 );
 
 mongoose

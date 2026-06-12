@@ -93,6 +93,27 @@ const pdfUrl =
         const signature = signatures.find(
           (sig) => sig.fileId === doc._id
         );
+        const generatePdf = async (
+  fileId: string
+) => {
+  try {
+    const response =
+      await axios.get(
+        `http://localhost:5000/api/pdf/generate/${fileId}`
+      );
+
+    alert(
+      response.data.message
+    );
+
+    console.log(
+      response.data.file
+    );
+
+  } catch (error) {
+    console.log(error);
+  }
+};
 
         return (
           <div
@@ -152,6 +173,15 @@ const pdfUrl =
             >
               Save Position
             </button>
+              <div style={{ marginTop: "10px" }}>
+  <button
+    onClick={() =>
+      generatePdf(doc._id)
+    }
+  >
+    Generate Signed PDF
+  </button>
+</div>
           </div>
         );
       })}
