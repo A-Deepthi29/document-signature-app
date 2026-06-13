@@ -47,15 +47,26 @@ export const generateSignedPdf = async (
     const page =
       pdfDoc.getPages()[0];
 
-    page.drawText(
-      `Signed By: ${signature.signer}`,
-      {
-        x: signature.x,
-        y: page.getHeight() - signature.y,
-        size: 14,
-        color: rgb(0, 0, 1),
-      }
-    );
+    if (
+  signature.x == null ||
+  signature.y == null
+) {
+  return res.status(400).json({
+    message:
+      "Signature coordinates missing",
+  });
+}
+page.drawText(
+  `Signed By: ${signature.signer}`,
+  {
+    x: signature.x,
+    y:
+      page.getHeight() -
+      signature.y,
+    size: 14,
+    color: rgb(0, 0, 1),
+  }
+);
 
     const pdfBytes =
       await pdfDoc.save();

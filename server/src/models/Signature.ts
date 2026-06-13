@@ -7,25 +7,23 @@ const signatureSchema = new mongoose.Schema(
       ref: "Document",
       required: true,
     },
-
     signer: {
       type: String,
       required: true,
     },
-
     x: {
       type: Number,
-      required: true,
     },
-
     y: {
       type: Number,
-      required: true,
     },
-
     status: {
       type: String,
       default: "pending",
+    },
+
+    token: {
+      type: String,
     },
   },
   {

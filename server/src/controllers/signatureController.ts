@@ -1,5 +1,9 @@
 import { Request, Response } from "express";
 import Signature from "../models/Signature";
+import { sendEmail } from "../utils/sendEmail";
+// signatureController.ts
+
+import { v4 as uuidv4 } from "uuid";
 
 export const createSignature = async (
   req: Request,
@@ -13,22 +17,41 @@ export const createSignature = async (
       y,
     } = req.body;
 
+    const token = uuidv4();
+
     const signature =
       await Signature.create({
         fileId,
         signer,
         x,
         y,
+        status: "pending",
+        token,
       });
 
-    res.status(201).json(signature);
-  } catch (error: any) {
-  console.error("SIGNATURE ERROR:", error);
+    const publicLink =
+      `http://localhost:5000/api/public/sign/${token}`;
 
-  res.status(500).json({
-    message: error.message,
-  });
-}
+    await sendEmail(
+      "recipient@gmail.com", // replace with actual signer email
+      "Document Signature Request",
+      `Please sign the document using this link:\n\n${publicLink}`
+    );
+
+    res.status(201).json({
+      message:
+        "Signature created and email sent",
+      signature,
+    });
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message:
+        "Failed to create signature",
+    });
+  }
 };
 
 export const getSignatures = async (
@@ -43,6 +66,34 @@ export const getSignatures = async (
   } catch (error) {
     res.status(500).json({
       message: "Failed to fetch signatures",
+    });
+  }
+};
+
+export const getPublicSignature = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const { token } = req.params;
+
+    const signature = await Signature.findOne({
+      token: token,
+    });
+
+    if (!signature) {
+      return res.status(404).json({
+        message: "Invalid Link",
+      });
+    }
+
+    res.status(200).json(signature);
+
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      message: "Server Error",
     });
   }
 };

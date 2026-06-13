@@ -9,6 +9,8 @@ import authRoutes from "./routes/authRoutes";
 import testRoute from "./routes/testRoute";
 import documentRoutes from "./routes/documentRoutes";
 import pdfRoutes from "./routes/pdfRoutes";
+import publicRoutes from "./routes/publicRoutes";
+
 
 dotenv.config();
 
@@ -33,6 +35,11 @@ app.use(
 app.use(
   "/api/pdf",
   pdfRoutes
+);
+
+app.use(
+  "/api/public",
+  publicRoutes
 );
 
 mongoose
