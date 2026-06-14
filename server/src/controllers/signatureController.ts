@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Signature from "../models/Signature";
 import { sendEmail } from "../utils/sendEmail";
+import { createAuditLog } from "../middleware/auditMiddleware";
 // signatureController.ts
 
 import { v4 as uuidv4 } from "uuid";
@@ -20,23 +21,30 @@ export const createSignature = async (
     const token = uuidv4();
 
     const signature =
-      await Signature.create({
-        fileId,
-        signer,
-        x,
-        y,
-        status: "pending",
-        token,
-      });
+  await Signature.create({
+    fileId,
+    signer,
+    x,
+    y,
+    status: "pending",
+    token,
+  });
 
-    const publicLink =
-      `http://localhost:5000/api/public/sign/${token}`;
+await createAuditLog(
+  fileId,
+  signer,
+  "Signature Created",
+  req.ip || "Unknown"
+);
 
-    await sendEmail(
-      "recipient@gmail.com", // replace with actual signer email
-      "Document Signature Request",
-      `Please sign the document using this link:\n\n${publicLink}`
-    );
+const publicLink =
+  `http://localhost:5000/api/public/sign/${token}`;
+
+await sendEmail(
+  "deepthiaavula@gmail.com",
+  "Document Signature Request",
+  `Please sign the document using this link:\n\n${publicLink}`
+);
 
     res.status(201).json({
       message:
