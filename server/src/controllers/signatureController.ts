@@ -105,3 +105,81 @@ export const getPublicSignature = async (
     });
   }
 };
+
+export const updateSignatureStatus =
+  async (
+    req: Request,
+    res: Response
+  ) => {
+    try {
+     const { token } = req.params;
+
+const {
+  status,
+  rejectionReason,
+} = req.body;
+
+console.log("Status received:", status);
+
+      const signature = await Signature.findOne({
+  token,
+});
+
+if (!signature) {
+  return res.status(404).json({
+    message: "Invalid Link",
+  });
+}
+
+signature.status = status;
+
+if (status === "rejected") {
+  signature.rejectionReason =
+    rejectionReason;
+}
+
+await signature.save();
+
+console.log(
+  "Saved Status:",
+  signature.status
+);
+
+const fileId =
+  signature.fileId?.toString();
+
+const signer =
+  signature.signer;
+
+if (!fileId || !signer) {
+  return res.status(400).json({
+    message:
+      "Invalid signature data",
+  });
+}
+
+await createAuditLog(
+  fileId,
+  signer,
+  `Status Changed To ${status}`,
+  req.ip || "Unknown"
+);
+
+console.log("Status received:", status);
+console.log("Token:", token);
+console.log("Saved Status:", signature.status);
+      res.status(200).json({
+        message:
+          "Status Updated Successfully",
+        signature,
+      });
+
+    } catch (error) {
+      console.log(error);
+
+      res.status(500).json({
+        message:
+          "Failed to update status",
+      });
+    }
+  };

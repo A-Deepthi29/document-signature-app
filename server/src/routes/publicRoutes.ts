@@ -1,33 +1,25 @@
 import express from "express";
-import Signature from "../models/Signature";
 import { getPublicSignature } from "../controllers/signatureController";
+import { updateSignatureStatus } from "../controllers/signatureController";
 
 const router = express.Router();
+
+/*
+GET PUBLIC SIGNATURE
+http://localhost:5000/api/public/sign/:token
+*/
 router.get(
   "/sign/:token",
   getPublicSignature
 );
 
-router.get(
+/*
+UPDATE STATUS
+http://localhost:5000/api/public/sign/:token
+*/
+router.put(
   "/sign/:token",
-  async (req, res) => {
-    try {
-      const signature =
-        await Signature.findOne({
-          token: req.params.token,
-        });
-
-      if (!signature) {
-        return res.status(404).json({
-          message: "Invalid Link",
-        });
-      }
-
-      res.json(signature);
-    } catch (error) {
-      res.status(500).json(error);
-    }
-  }
+  updateSignatureStatus
 );
 
 export default router;
