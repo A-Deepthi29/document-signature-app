@@ -1,190 +1,133 @@
-import { Document, Page, pdfjs } from "react-pdf";
-import "react-pdf/dist/Page/AnnotationLayer.css";
-import "react-pdf/dist/Page/TextLayer.css";
 import { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-pdfjs.GlobalWorkerOptions.workerSrc =
-  `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+import DocumentCard from "../components/DocumentCard";
+import type { DocumentType } from "../type/document";
 
 function Dashboard() {
-  const [documents, setDocuments] = useState<any[]>([]);
-  const [signatures, setSignatures] = useState<any[]>([]);
-  const [position, setPosition] = useState({
-    x: 120,
-    y: 300,
-  });
+  const navigate = useNavigate();
+  const [documents, setDocuments] =
+    useState<DocumentType[]>([]);
+
+  const [filter, setFilter] =
+    useState("All");
 
   useEffect(() => {
     fetchDocuments();
-    fetchSignatures();
   }, []);
 
   const fetchDocuments = async () => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await axios.get(
-        "http://localhost:5000/api/docs",
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setDocuments(response.data);
-    } catch (error) {
-      console.log("Documents Error:", error);
-    }
-  };
-
-  const fetchSignatures = async () => {
-    try {
-      const response = await axios.get(
-        "http://localhost:5000/api/signatures"
-      );
-
-      setSignatures(response.data);
-    } catch (error) {
-      console.log("Signatures Error:", error);
-    }
-  };
-
-  const saveSignature = async (
-    fileId: string,
-    x: number,
-    y: number
-  ) => {
-    try {
-      await axios.post(
-        "http://localhost:5000/api/signatures",
-        {
-          fileId,
-          signer: "Deepthi",
-          x,
-          y,
-          status: "pending",
-        }
-      );
-
-      alert("Signature Saved Successfully");
-
-      fetchSignatures();
-    } catch (error) {
-      console.log(error);
-      alert("Failed to save signature");
-    }
-  };
-
-  return (
-    <div>
-      <h1>Dashboard</h1>
-
-      {documents.map((doc) => {
-        if (!doc.filePath) {
-  return null;
-}
-
-const pdfUrl =
-  "http://localhost:5000/" +
-  doc.filePath.replace(/\\/g, "/");
-
-        const signature = signatures.find(
-          (sig) => sig.fileId === doc._id
-        );
-        const generatePdf = async (
-  fileId: string
-) => {
   try {
-    const response =
-      await axios.get(
-        `http://localhost:5000/api/pdf/generate/${fileId}`
-      );
+    const token = localStorage.getItem("token");
 
-    alert(
-      response.data.message
+    console.log("TOKEN:", token);
+
+    const response = await axios.get(
+      "http://localhost:5000/api/docs",
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
 
-    console.log(
-      response.data.file
-    );
-
+    setDocuments(response.data);
   } catch (error) {
-    console.log(error);
+    console.log("Documents Error:", error);
   }
 };
-
-        return (
-          <div
-            key={doc._id}
-            style={{
-              border: "1px solid gray",
-              margin: "20px",
-              padding: "10px",
-            }}
-          >
-            <h3>{doc.fileName}</h3>
-
-            <p>{doc.filePath}</p>
-
-            <div
-              style={{
-                position: "relative",
-                display: "inline-block",
-              }}
-            >
-              <Document file={pdfUrl}>
-                <Page
-                  pageNumber={1}
-                  width={300}
-                  renderTextLayer={false}
-                  renderAnnotationLayer={false}
-                />
-              </Document>
-
-              {/* Signature Placeholder */}
-              <div
-                style={{
-                  position: "absolute",
-                  left: signature?.x || position.x,
-                  top: signature?.y || position.y,
-                  background: "#2196F3",
-                  color: "white",
-                  padding: "10px",
-                  borderRadius: "5px",
-                  fontWeight: "bold",
-                }}
-              >
-                ✍️ Sign Here
-              </div>
-            </div>
-
-            <br />
-
-            <button
-              onClick={() =>
-                saveSignature(
-                  doc._id,
-                  position.x,
-                  position.y
-                )
-              }
-            >
-              Save Position
-            </button>
-              <div style={{ marginTop: "10px" }}>
-  <button
-    onClick={() =>
-      generatePdf(doc._id)
-    }
-  >
-    Generate Signed PDF
-  </button>
-</div>
-          </div>
+  const filteredDocs =
+    filter === "All"
+      ? documents
+      : documents.filter(
+          (doc) =>
+            doc.status === filter
         );
-      })}
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-6">
+
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+
+        <h1 className="text-3xl font-bold">
+          My Documents
+        </h1>
+
+        <button
+  onClick={() => navigate("/upload")}
+  className="
+    bg-blue-600
+    text-white
+    px-4
+    py-2
+    rounded-lg
+    hover:bg-blue-700
+  "
+>
+  Upload New
+</button>
+
+      </div>
+
+      {/* Filter */}
+      <div className="mb-6">
+
+        <select
+          value={filter}
+          onChange={(e) =>
+            setFilter(
+              e.target.value
+            )
+          }
+          className="
+            border
+            rounded-lg
+            px-4
+            py-2
+            bg-white
+          "
+        >
+          <option value="All">
+            All Documents
+          </option>
+
+          <option value="Pending">
+            Pending
+          </option>
+
+          <option value="Signed">
+            Signed
+          </option>
+
+        </select>
+
+      </div>
+
+      {/* Responsive Grid */}
+      <div
+  className="
+    grid
+    grid-cols-1
+    sm:grid-cols-2
+    lg:grid-cols-3
+    gap-6
+  "
+>
+  {filteredDocs.length === 0 ? (
+    <div className="col-span-full text-center text-gray-500 text-lg">
+      No documents found
+    </div>
+  ) : (
+    filteredDocs.map((doc) => (
+      <DocumentCard
+        key={doc._id}
+        doc={doc}
+      />
+    ))
+  )}
+</div>
     </div>
   );
 }

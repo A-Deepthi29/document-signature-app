@@ -6,32 +6,37 @@ const protect = (
   res: Response,
   next: NextFunction
 ) => {
-
   const authHeader = req.headers.authorization;
+
+  console.log("AUTH HEADER:", authHeader);
 
   if (
     !authHeader ||
     !authHeader.startsWith("Bearer ")
   ) {
     return res.status(401).json({
-      message: "No Token"
+      message: "No Token",
     });
   }
 
   const token = authHeader.split(" ")[1];
 
   try {
-  const decoded = jwt.verify(
-    token,
-    process.env.JWT_SECRET as string
-  );
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET as string
+    ) as any;
 
-  (req as any).user = decoded;
+    console.log("DECODED:", decoded);
 
-  next();
-  } catch {
+    (req as any).user = decoded;
+
+    next();
+  } catch (error) {
+    console.log("JWT ERROR:", error);
+
     return res.status(401).json({
-      message: "Invalid Token"
+      message: "Invalid Token",
     });
   }
 };
