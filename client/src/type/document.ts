@@ -4,4 +4,6 @@ export interface DocumentType {
   filePath: string;
   status: "Pending" | "Signed";
   createdAt: string;
+  x?: number;
+  y?: number;
 }

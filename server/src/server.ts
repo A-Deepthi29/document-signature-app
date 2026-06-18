@@ -21,9 +21,17 @@ app.use(cors());
 
 app.use(express.json());
 
+const uploadsPath = path.join(
+  __dirname,
+  "..",
+  "uploads"
+);
+
+console.log("STATIC PATH:", uploadsPath);
+
 app.use(
   "/uploads",
-  express.static(path.join(__dirname, "../uploads"))
+  express.static(uploadsPath)
 );
 
 app.use("/api/auth", authRoutes);
@@ -57,6 +65,38 @@ app.get("/", (req, res) => {
   res.send("Server Running");
 });
 
+app.get("/test-file", (req, res) => {
+  console.log(
+    path.join(
+      process.cwd(),
+      "uploads"
+    )
+  );
+
+  res.send("check terminal");
+});
+
 app.listen(5000, () => {
   console.log("Server Running On Port 5000");
+});
+
+app.get("/test-upload", (req, res) => {
+  const fs = require("fs");
+  const path = require("path");
+
+  const uploadPath = path.join(
+    process.cwd(),
+    "uploads"
+  );
+
+  console.log("UPLOAD PATH:", uploadPath);
+
+  if (fs.existsSync(uploadPath)) {
+    console.log(
+      "FILES:",
+      fs.readdirSync(uploadPath)
+    );
+  }
+
+  res.send("Check Terminal");
 });

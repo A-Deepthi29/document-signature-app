@@ -2,6 +2,10 @@ import { Request, Response } from "express";
 import Signature from "../models/Signature";
 import { sendEmail } from "../utils/sendEmail";
 import { createAuditLog } from "../middleware/auditMiddleware";
+import fs from "fs";
+import path from "path";
+import { PDFDocument, rgb } from "pdf-lib";
+import Document from "../models/Document";
 // signatureController.ts
 
 import { v4 as uuidv4 } from "uuid";
@@ -38,7 +42,10 @@ await createAuditLog(
 );
 
 const publicLink =
-  `http://localhost:5000/api/public/sign/${token}`;
+`http://localhost:5173/sign/${token}`;
+console.log("EMAIL USER:", process.env.EMAIL_USER);
+console.log("PUBLIC LINK:", publicLink);
+console.log("ABOUT TO SEND EMAIL");
 
 await sendEmail(
   "deepthiaavula@gmail.com",
@@ -106,68 +113,157 @@ export const getPublicSignature = async (
   }
 };
 
+const generateSignedPdf = async (
+  fileId: string
+) => {
+  const document =
+    await Document.findById(fileId);
+
+  if (!document) {
+    throw new Error(
+      "Document not found"
+    );
+  }
+
+ const signature =
+  await Signature.findOne({
+    fileId,
+  }).sort({ createdAt: -1 });
+
+  if (!signature) {
+    throw new Error(
+      "Signature not found"
+    );
+  }
+
+  const pdfPath = path.join(
+    process.cwd(),
+    document.filePath
+  );
+
+  const existingPdfBytes =
+    fs.readFileSync(pdfPath);
+
+  const pdfDoc =
+    await PDFDocument.load(
+      existingPdfBytes
+    );
+
+  const page =
+    pdfDoc.getPages()[0];
+console.log(
+  "SIGN POSITION:",
+  signature.x,
+  signature.y
+);
+  page.drawText(
+    `Signed By: ${signature.signer}`,
+    {
+      x: signature.x || 120,
+      y:
+        page.getHeight() -
+        (signature.y || 300),
+      size: 16,
+      color: rgb(0, 0, 1),
+    }
+  );
+
+  const pdfBytes =
+    await pdfDoc.save();
+
+  const signedFileName =
+    `signed-${Date.now()}.pdf`;
+
+  const signedPdfPath =
+    `uploads/${signedFileName}`;
+
+  fs.writeFileSync(
+    signedPdfPath,
+    pdfBytes
+  );
+
+  return signedPdfPath;
+};
+
 export const updateSignatureStatus =
   async (
     req: Request,
     res: Response
   ) => {
     try {
-     const { token } = req.params;
 
-const {
-  status,
-  rejectionReason,
-} = req.body;
+      const { token } =
+        req.params;
 
-console.log("Status received:", status);
+      const {
+        status,
+        rejectionReason,
+      } = req.body;
 
-      const signature = await Signature.findOne({
-  token,
-});
+      const signature =
+        await Signature.findOne({
+          token,
+        });
 
-if (!signature) {
-  return res.status(404).json({
-    message: "Invalid Link",
-  });
-}
+      if (!signature) {
+        return res.status(404).json({
+          message:
+            "Invalid Link",
+        });
+      }
 
-signature.status = status;
+      signature.status = status;
 
-if (status === "rejected") {
-  signature.rejectionReason =
-    rejectionReason;
-}
+      if (
+        status === "rejected"
+      ) {
+        signature.rejectionReason =
+          rejectionReason;
+      }
 
-await signature.save();
+      await signature.save();
 
-console.log(
-  "Saved Status:",
-  signature.status
-);
+      const fileId =
+        signature.fileId?.toString();
 
-const fileId =
-  signature.fileId?.toString();
+      const signer =
+        signature.signer;
 
-const signer =
-  signature.signer;
+      if (
+        !fileId ||
+        !signer
+      ) {
+        return res.status(400).json({
+          message:
+            "Invalid signature data",
+        });
+      }
 
-if (!fileId || !signer) {
-  return res.status(400).json({
-    message:
-      "Invalid signature data",
-  });
-}
+      if (
+        status === "signed"
+      ) {
 
-await createAuditLog(
-  fileId,
-  signer,
-  `Status Changed To ${status}`,
-  req.ip || "Unknown"
-);
+        const signedPdfPath =
+          await generateSignedPdf(
+            fileId
+          );
 
-console.log("Status received:", status);
-console.log("Token:", token);
-console.log("Saved Status:", signature.status);
+        await Document.findByIdAndUpdate(
+          fileId,
+          {
+            status: "Signed",
+            signedPdfPath,
+          }
+        );
+      }
+
+      await createAuditLog(
+        fileId,
+        signer,
+        `Status Changed To ${status}`,
+        req.ip || "Unknown"
+      );
+
       res.status(200).json({
         message:
           "Status Updated Successfully",
@@ -175,6 +271,7 @@ console.log("Saved Status:", signature.status);
       });
 
     } catch (error) {
+
       console.log(error);
 
       res.status(500).json({

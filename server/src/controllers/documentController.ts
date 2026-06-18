@@ -53,3 +53,29 @@ export const uploadDocument = async (
   });
 }
 };
+
+export const downloadSignedPdf =
+  async (
+    req: Request,
+    res: Response
+  ) => {
+
+    const document =
+      await Document.findById(
+        req.params.id
+      );
+
+    if (
+      !document ||
+      !document.signedPdfPath
+    ) {
+      return res.status(404).json({
+        message:
+          "Signed PDF not found",
+      });
+    }
+
+    res.download(
+      document.signedPdfPath
+    );
+  };

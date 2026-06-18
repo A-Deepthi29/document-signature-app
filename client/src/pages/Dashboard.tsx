@@ -4,11 +4,20 @@ import { useNavigate } from "react-router-dom";
 
 import DocumentCard from "../components/DocumentCard";
 import type { DocumentType } from "../type/document";
+import PdfViewer from "../components/PdfViewer";
 
 function Dashboard() {
   const navigate = useNavigate();
+  const [selectedDoc, setSelectedDoc] =
+  useState<DocumentType | null>(null);
   const [documents, setDocuments] =
     useState<DocumentType[]>([]);
+
+const [position, setPosition] =
+  useState({
+    x: 0,
+    y: 0,
+  });
 
   const [filter, setFilter] =
     useState("All");
@@ -37,6 +46,42 @@ function Dashboard() {
     console.log("Documents Error:", error);
   }
 };
+const createSignature = async (
+  fileId: string,
+  x: number,
+  y: number
+) => {
+
+  if (x === 0 && y === 0) {
+    alert(
+      "Please open the PDF and click where the signature should be placed."
+    );
+    return;
+  }
+
+  try {
+
+    const response =
+      await axios.post(
+        "http://localhost:5000/api/signatures",
+        {
+          fileId,
+          signer: "Deepthi",
+          x,
+          y,
+        }
+      );
+
+    alert(
+      "Signature Request Created Successfully"
+    );
+
+    console.log(response.data);
+
+  } catch (error) {
+    console.log(error);
+  }
+};
   const filteredDocs =
     filter === "All"
       ? documents
@@ -55,16 +100,9 @@ function Dashboard() {
           My Documents
         </h1>
 
-        <button
+<button
   onClick={() => navigate("/upload")}
-  className="
-    bg-blue-600
-    text-white
-    px-4
-    py-2
-    rounded-lg
-    hover:bg-blue-700
-  "
+  className="bg-blue-500 text-white px-4 py-2 rounded"
 >
   Upload New
 </button>
@@ -115,19 +153,112 @@ function Dashboard() {
     gap-6
   "
 >
+  
   {filteredDocs.length === 0 ? (
     <div className="col-span-full text-center text-gray-500 text-lg">
       No documents found
     </div>
   ) : (
     filteredDocs.map((doc) => (
-      <DocumentCard
-        key={doc._id}
-        doc={doc}
-      />
-    ))
+  <DocumentCard
+  key={doc._id}
+  doc={doc}
+  createSignature={createSignature}
+  setSelectedDoc={setSelectedDoc}
+  position={position}
+/>
+))
   )}
 </div>
+{selectedDoc && (
+  <div
+    className="
+      fixed
+      inset-0
+      bg-black/50
+      flex
+      justify-center
+      items-center
+      z-50
+    "
+  >
+    <div
+      className="
+        bg-white
+        p-5
+        rounded-xl
+        w-[90%]
+        h-[90vh]
+        overflow-auto
+      "
+    >
+      <div className="flex justify-between mb-4">
+
+        <h2 className="text-xl font-bold">
+          {selectedDoc.fileName}
+        </h2>
+
+        <button
+          onClick={() =>
+            setSelectedDoc(null)
+          }
+          className="
+            bg-red-500
+            text-white
+            px-3
+            py-1
+            rounded
+          "
+        >
+          Close
+        </button>
+
+      </div>
+
+      <PdfViewer
+  pdfUrl={`http://localhost:5000/${selectedDoc.filePath.replace(
+    /\\/g,
+    "/"
+  )}`}
+  position={position}
+  setPosition={setPosition}
+/>
+
+      <div className="mt-4">
+
+        <p>
+          X: {position.x}
+        </p>
+
+        <p>
+          Y: {position.y}
+        </p>
+
+        <button
+          onClick={() =>
+            createSignature(
+              selectedDoc._id,
+              position.x,
+              position.y
+            )
+          }
+          className="
+            bg-green-500
+            text-white
+            px-4
+            py-2
+            rounded
+            mt-3
+          "
+        >
+          Save Signature Position
+        </button>
+
+      </div>
+
+    </div>
+  </div>
+)}
     </div>
   );
 }

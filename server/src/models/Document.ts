@@ -11,14 +11,20 @@ const documentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+uploadedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "User",
+  required: true,
+},
 
-    uploadedBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-    },status: {
+status: {
   type: String,
   default: "Pending",
+},
+
+signedPdfPath: {
+  type: String,
+  default: "",
 },
   },
   {
