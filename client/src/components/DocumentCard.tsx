@@ -86,7 +86,8 @@ function DocumentCard({
           <button
             onClick={() =>
               window.open(
-                `http://localhost:5000/api/docs/download/${doc._id}`
+  `${import.meta.env.VITE_API_URL}/api/docs/download/${doc._id}`
+
               )
             }
             className="

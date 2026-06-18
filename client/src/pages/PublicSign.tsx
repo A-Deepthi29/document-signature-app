@@ -15,7 +15,7 @@ function PublicSign() {
   const fetchSignature = async () => {
     try {
       const response = await axios.get(
-        `http://localhost:5000/api/public/sign/${token}`
+  `${import.meta.env.VITE_API_URL}/api/public/sign/${token}`
       );
 
       setSignature(response.data);
@@ -27,7 +27,7 @@ function PublicSign() {
   const signDocument = async () => {
     try {
       await axios.put(
-        `http://localhost:5000/api/public/sign/${token}`,
+  `${import.meta.env.VITE_API_URL}/api/public/sign/${token}`,
         {
           status: "signed",
         }
@@ -42,23 +42,21 @@ function PublicSign() {
   };
 
   const rejectDocument = async () => {
-    try {
-      await axios.put(
-        `http://localhost:5000/api/public/sign/${token}`,
-        {
-          status: "rejected",
-          rejectionReason:
-            "Rejected by signer",
-        }
-      );
+  try {
+    await axios.put(
+      `${import.meta.env.VITE_API_URL}/api/public/sign/${token}`,
+      {
+        status: "Rejected",
+      }
+    );
 
-      alert("Document Rejected");
+    alert("Document Rejected");
 
-      fetchSignature();
-    } catch (error) {
-      console.log(error);
-    }
-  };
+    fetchSignature();
+  } catch (error) {
+    console.log(error);
+  }
+};
 
   return (
     <div className="min-h-screen flex flex-col justify-center items-center gap-4">

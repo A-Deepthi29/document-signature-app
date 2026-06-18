@@ -33,14 +33,13 @@ const [position, setPosition] =
     console.log("TOKEN:", token);
 
     const response = await axios.get(
-      "http://localhost:5000/api/docs",
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
+  `${import.meta.env.VITE_API_URL}/api/docs`,
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
     setDocuments(response.data);
   } catch (error) {
     console.log("Documents Error:", error);
@@ -63,7 +62,7 @@ const createSignature = async (
 
     const response =
       await axios.post(
-        "http://localhost:5000/api/signatures",
+  `${import.meta.env.VITE_API_URL}/api/signatures`,
         {
           fileId,
           signer: "Deepthi",
