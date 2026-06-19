@@ -42,16 +42,16 @@ await createAuditLog(
 );
 
 const publicLink =
-`http://localhost:5173/sign/${token}`;
+`https://document-signature-app-git-main-a-deepthi29s-projects.vercel.app/sign/${token}`;
 console.log("EMAIL USER:", process.env.EMAIL_USER);
 console.log("PUBLIC LINK:", publicLink);
 console.log("ABOUT TO SEND EMAIL");
 
-await sendEmail(
-  "deepthiaavula@gmail.com",
-  "Document Signature Request",
-  `Please sign the document using this link:\n\n${publicLink}`
-);
+// await sendEmail(
+//   "deepthiaavula@gmail.com",
+//   "Document Signature Request",
+//   `Please sign the document using this link:\n\n${publicLink}`
+// );
 
     res.status(201).json({
       message:
