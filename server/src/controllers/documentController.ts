@@ -35,10 +35,10 @@ export const uploadDocument = async (
     }
 
     const document = await Document.create({
-      fileName: req.file.filename,
-      filePath: req.file.path,
-      uploadedBy: (req as any).user.id,
-    });
+  fileName: req.file.filename,
+  filePath: `uploads/${req.file.filename}`,
+  uploadedBy: (req as any).user.id,
+});
 
     res.status(201).json({
       message: "PDF uploaded successfully",
