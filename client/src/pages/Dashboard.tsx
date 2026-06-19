@@ -71,6 +71,15 @@ const createSignature = async (
         }
       );
 
+      console.log(
+  "SIGN LINK:",
+  response.data.publicLink
+);
+
+alert(
+  `Signature Link:\n${response.data.publicLink}`
+);
+
     alert(
       "Signature Request Created Successfully"
     );
