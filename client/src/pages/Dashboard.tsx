@@ -213,9 +213,10 @@ const createSignature = async (
         </button>
 
       </div>
-
+          console.log("Selected Document:", selectedDoc);
+console.log("FILE PATH:", selectedDoc?.filePath);
       <PdfViewer
-  pdfUrl={`http://localhost:5000/${selectedDoc.filePath.replace(
+  pdfUrl={`${import.meta.env.VITE_API_URL}/${selectedDoc.filePath.replace(
     /\\/g,
     "/"
   )}`}

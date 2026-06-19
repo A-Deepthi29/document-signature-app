@@ -10,7 +10,8 @@ function Register() {
   const [password, setPassword] = useState("");
 
   const handleRegister = async () => {
-    try {console.log(
+    try {
+      console.log(
   "API URL:",
   import.meta.env.VITE_API_URL
 );
@@ -26,24 +27,15 @@ function Register() {
       alert("Registration Successful");
 
       navigate("/login");
-    } catch (error: any) {
-
+    } 
+  catch (error: any) {
   console.log("FULL ERROR:", error);
-
-  console.log(
-    "STATUS:",
-    error.response?.status
-  );
-
-  console.log(
-    "DATA:",
-    error.response?.data
-  );
+  console.log("STATUS:", error.response?.status);
+  console.log("DATA:", error.response?.data);
 
   alert(
-    JSON.stringify(
-      error.response?.data
-    )
+    error.response?.data?.message ||
+    "Registration Failed"
   );
 }
   };
