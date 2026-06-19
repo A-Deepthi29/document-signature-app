@@ -54,10 +54,10 @@ console.log("ABOUT TO SEND EMAIL");
 // );
 
     res.status(201).json({
-      message:
-        "Signature created and email sent",
-      signature,
-    });
+  message: "Signature created",
+  signature,
+  publicLink,
+});
 
   } catch (error) {
     console.log(error);
